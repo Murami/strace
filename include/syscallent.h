@@ -7,6 +7,10 @@ typedef struct	syscallentry_s
   char*		callname;
 }		syscallentry_t;
 
+/*
+** 314 Syscalls informations
+*/
+
 syscallentry_t syscallent[] =
   {
     { 3,	"read"			},

@@ -35,8 +35,10 @@ int	trace_infos(int pid)
       perror("error: can't get registers");
       return (-1);
     }
-  /// !! VERIFER SI ORIG_RAX N'EST PAS "OUT OF BOUNDS" DE SYSCALLENT
-  printf("%s\n", syscallent[regs.orig_rax].callname);
+  if (regs.orig_rax >= 314)
+    printf("unknonw syscalls\n");
+  else
+    printf("%s\n", syscallent[regs.orig_rax].callname);
   return (0);
 }
 

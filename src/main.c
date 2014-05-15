@@ -5,6 +5,7 @@
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 #include <sys/reg.h>
+#include <sys/user.h>
 
 #include "params.h"
 
@@ -17,13 +18,8 @@ int	launch_son(char* cmd)
 
   if (!pid)
     {
-      if (ptrace(PTRACE_TRACEME) == -1)
-	{
-	  perror("error: can't make child a tracee");
-	  return (-1);
-	}
+      ptrace(PTRACE_TRACEME);
       execlp("sh", "sh", "-c", cmd, NULL);
-      fprintf(stderr, "fatal error: exec failed\n");
       exit(EXIT_FAILURE);
     }
   return (pid);
@@ -31,45 +27,63 @@ int	launch_son(char* cmd)
 
 int	trace_infos(int pid)
 {
-  long int	reg_a;
+  struct user_regs_struct	regs;
 
-  if ((reg_a = ptrace(PTRACE_PEEKUSER, pid,  8 * ORIG_RAX, NULL)) == -1)
+  if (ptrace(PTRACE_GETREGS, pid, 0, &regs) == -1)
     {
-      perror("error: can't get rax register");
+      perror("error: can't get registers");
       return (-1);
     }
-  printf("%ld\n", reg_a);
+  printf("");
   return (0);
+}
+
+int	next_step(int pid)
+{
+  if (ptrace(PTRACE_SYSCALL, pid, 1, NULL) == -1)
+    {
+      perror("error: can't trace process");
+      return (-1);
+    }
+  return (0);
+}
+
+int	trace_loop(int pid)
+{
+  int	status;
+
+  printf("=== Process ID %d ===\n", pid);
+  while (1)
+    {
+      waitpid(pid, &status, __WALL);
+
+      if (WIFEXITED(status))
+	{
+	  printf("=== Exited with status %d ===\n", WEXITSTATUS(status));
+	  return (0);
+	}
+      else if (WIFSIGNALED(status))
+	{
+	  printf("=== Exited with signal %d ===\n", WTERMSIG(status));
+	  return (0);
+	}
+
+      if (trace_infos(pid) == -1)
+	return (-1);
+      if (next_step(pid) == -1)
+	return (-1);
+    }
 }
 
 int	trace_pid(int pid, int is_son)
 {
-  int	status;
-
-  status = 1407;
   if (!is_son)
     if (ptrace(PTRACE_ATTACH, pid) == -1)
       {
 	perror("error: can't attach process");
 	return (-1);
       }
-  while (WIFSTOPPED(status))
-    {
-      waitpid(pid, &status, __WALL);
-      if (!WIFEXITED(status))
-	{
-	  if (trace_infos(pid) == -1)
-	    return (-1);
-	  if (ptrace(PTRACE_SYSCALL, pid, 1, NULL) == -1)
-	    {
-	      perror("error: can't trace process");
-	      return (-1);
-	    }
-	}
-      else
-	ptrace(PTRACE_CONT, pid, 1, NULL);
-    }
-  return (0);
+  return (trace_loop(pid));
 }
 
 int	trace(int pid, char* cmd)

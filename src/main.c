@@ -10,6 +10,52 @@
 #include "params.h"
 #include "syscallent.h"
 
+long	peek_data(int pid, void* addr)
+{
+  long	value;
+
+  if ((value = ptrace(PTRACE_PEEKDATA, pid, addr, 0)) == -1)
+    {
+      perror("error: can't get data");
+      return (-1);
+    }
+  return (value);
+}
+
+int	get_regs(int pid, struct user_regs_struct* regs)
+{
+  if (ptrace(PTRACE_GETREGS, pid, 0, regs) == -1)
+    {
+      perror("error: can't get registers");
+      return (-1);
+    }
+  return (0);
+}
+
+int	is_syscall(int pid)
+{
+  struct user_regs_struct	regs;
+  long				instr;
+  char*				instr_bytes;
+
+  if (get_regs(pid, &regs))
+    return (-1);
+  if ((instr = peek_data(pid, (void*)regs.rip)) == -1)
+    return (-1);
+  instr_bytes = (char*)&instr;
+  printf("instr : %lxu\n", instr);
+  printf("instr : %02hhx %02hhx %02hhx %02hhx %02hhx %02hhx %02hhx %02hhx\n",
+	 instr_bytes[7],
+	 instr_bytes[6],
+	 instr_bytes[5],
+	 instr_bytes[4],
+	 instr_bytes[3],
+	 instr_bytes[2],
+	 instr_bytes[1],
+	 instr_bytes[0]);
+  return (0);
+}
+
 int	launch_son(char* cmd)
 {
   int	pid;
@@ -30,11 +76,8 @@ int	trace_infos(int pid)
 {
   struct user_regs_struct	regs;
 
-  if (ptrace(PTRACE_GETREGS, pid, 0, &regs) == -1)
-    {
-      perror("error: can't get registers");
-      return (-1);
-    }
+  if (get_regs(pid, &regs) == -1)
+    return (-1);
   if (regs.orig_rax >= 314)
     printf("unknonw syscalls\n");
   else
@@ -72,6 +115,8 @@ int	trace_loop(int pid)
 	  return (0);
 	}
 
+      if (is_syscall(pid) == -1)
+	return (-1);
       if (trace_infos(pid) == -1)
 	return (-1);
       if (next_step(pid) == -1)

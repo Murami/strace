@@ -64,16 +64,59 @@ int	launch_son(char** argv)
   return (pid);
 }
 
+void	display_syscallname(struct user_regs_struct* regs)
+{
+  if (regs->rax >= 314)
+    printf("???");
+  else
+    printf("%s", syscallent[regs->rax].callname);
+}
+
+int	get_argc(struct user_regs_struct* regs)
+{
+  if (regs->rax >= 314)
+    return (0);
+  return (syscallent[regs->rax].argsnumber);
+}
+
+void	get_argv(struct user_regs_struct* regs, long* argv)
+{
+  argv[0] = regs->rdi;
+  argv[1] = regs->rsi;
+  argv[2] = regs->rdx;
+  argv[3] = regs->rcx;
+  argv[4] = regs->r8;
+  argv[5] = regs->r9;
+}
+
+void	display_args(struct user_regs_struct* regs)
+{
+  int				i;
+  int				argc;
+  long				argv[6];
+
+  i = 0;
+  argc = get_argc(regs);
+  get_argv(regs, argv);
+  printf("(");
+  while (i < argc)
+    {
+      if (i != 0)
+	printf(", ");
+      printf("%ld", argv[i]);
+      i++;
+    }
+  printf(")\n");
+}
+
 int	trace_infos(int pid)
 {
   struct user_regs_struct	regs;
 
   if (get_regs(pid, &regs) == -1)
     return (-1);
-  if (regs.rax >= 314)
-    printf("unknonw syscalls\n");
-  else
-    printf("%s\n", syscallent[regs.rax].callname);
+  display_syscallname(&regs);
+  display_args(&regs);
   return (0);
 }
 

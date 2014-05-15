@@ -48,7 +48,7 @@ int	is_syscall(int pid)
   return (0);
 }
 
-int	launch_son(char* cmd)
+int	launch_son(char** argv)
 {
   int	pid;
 
@@ -57,8 +57,8 @@ int	launch_son(char* cmd)
 
   if (!pid)
     {
-      ptrace(PTRACE_TRACEME);
-      execlp("sh", "sh", "-c", cmd, NULL);
+      ptrace(PTRACE_TRACEME, 0, 0, 0);
+      execvp(argv[0], argv + 1);
       exit(EXIT_FAILURE);
     }
   return (pid);
@@ -70,16 +70,16 @@ int	trace_infos(int pid)
 
   if (get_regs(pid, &regs) == -1)
     return (-1);
-  if (regs.orig_rax >= 314)
+  if (regs.rax >= 314)
     printf("unknonw syscalls\n");
   else
-    printf("%s\n", syscallent[regs.orig_rax].callname);
+    printf("%s\n", syscallent[regs.rax].callname);
   return (0);
 }
 
 int	next_step(int pid)
 {
-  if (ptrace(PTRACE_SINGLESTEP, pid, 1, NULL) == -1)
+  if (ptrace(PTRACE_SINGLESTEP, pid, 0, NULL) == -1)
     {
       perror("error: can't trace process");
       return (-1);
@@ -90,13 +90,11 @@ int	next_step(int pid)
 int	trace_loop(int pid)
 {
   int	status;
-  int	prev_is_syscall;
 
-  prev_is_syscall = 0;
   printf("=== Process ID %d ===\n", pid);
   while (1)
     {
-      waitpid(pid, &status, __WALL);
+      waitpid(pid, &status, 0);
 
      if (WIFEXITED(status))
 	{
@@ -107,17 +105,13 @@ int	trace_loop(int pid)
        {
 	  printf("=== Exited with signal %d ===\n", WTERMSIG(status));
 	  return (0);
-	}
+       }
 
-      if (prev_is_syscall)
+      if (is_syscall(pid))
 	{
 	  if (trace_infos(pid) == -1)
 	    return (-1);
-	  prev_is_syscall = 0;
 	}
-
-      if (is_syscall(pid))
-	prev_is_syscall = 1;
 
       if (next_step(pid) == -1)
 	return (-1);
@@ -135,13 +129,13 @@ int	trace_pid(int pid, int is_son)
   return (trace_loop(pid));
 }
 
-int	trace(int pid, char* cmd)
+int	trace(int pid, char** argv)
 {
   if (pid != -1)
     return (trace_pid(pid, 0));
   else
     {
-      if ((pid = launch_son(cmd)) == -1)
+      if ((pid = launch_son(argv)) == -1)
 	return (-1);
       return (trace_pid(pid, 1));
     }
@@ -151,10 +145,15 @@ int	trace(int pid, char* cmd)
 int	main()
 {
   params_t	params;
+  char*		av[2] =
+    {
+      "ls",
+      "ls"
+    };
 
   params.pid = -1;
-  params.cmd = "ls";
-  if (trace(params.pid, params.cmd) == -1)
+  params.argv = av;
+  if (trace(params.pid, params.argv) == -1)
     return (EXIT_FAILURE);
   return (EXIT_SUCCESS);
 }

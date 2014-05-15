@@ -4,7 +4,7 @@
 typedef struct	params_s
 {
   int		pid;
-  char*		cmd;
+  char**	argv;
 }		params_t;
 
 #endif /* PARAMS_H */

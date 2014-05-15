@@ -36,23 +36,15 @@ int	is_syscall(int pid)
 {
   struct user_regs_struct	regs;
   long				instr;
-  char*				instr_bytes;
 
   if (get_regs(pid, &regs))
-    return (-1);
+    return (0);
   if ((instr = peek_data(pid, (void*)regs.rip)) == -1)
-    return (-1);
-  instr_bytes = (char*)&instr;
-  printf("instr : %lxu\n", instr);
-  printf("instr : %02hhx %02hhx %02hhx %02hhx %02hhx %02hhx %02hhx %02hhx\n",
-	 instr_bytes[7],
-	 instr_bytes[6],
-	 instr_bytes[5],
-	 instr_bytes[4],
-	 instr_bytes[3],
-	 instr_bytes[2],
-	 instr_bytes[1],
-	 instr_bytes[0]);
+    return (0);
+  if ((instr & 0x0000ffff) == 0x050f ||
+      (instr & 0x0000ffff) == 0x340f ||
+      (instr & 0x0000ffff) == 0x80cd)
+    return (1);
   return (0);
 }
 
@@ -87,7 +79,7 @@ int	trace_infos(int pid)
 
 int	next_step(int pid)
 {
-  if (ptrace(PTRACE_SYSCALL, pid, 1, NULL) == -1)
+  if (ptrace(PTRACE_SINGLESTEP, pid, 1, NULL) == -1)
     {
       perror("error: can't trace process");
       return (-1);
@@ -98,27 +90,35 @@ int	next_step(int pid)
 int	trace_loop(int pid)
 {
   int	status;
+  int	prev_is_syscall;
 
+  prev_is_syscall = 0;
   printf("=== Process ID %d ===\n", pid);
   while (1)
     {
       waitpid(pid, &status, __WALL);
 
-      if (WIFEXITED(status))
+     if (WIFEXITED(status))
 	{
 	  printf("=== Exited with status %d ===\n", WEXITSTATUS(status));
 	  return (0);
 	}
-      else if (WIFSIGNALED(status))
-	{
+     else if (WIFSIGNALED(status))
+       {
 	  printf("=== Exited with signal %d ===\n", WTERMSIG(status));
 	  return (0);
 	}
 
-      if (is_syscall(pid) == -1)
-	return (-1);
-      if (trace_infos(pid) == -1)
-	return (-1);
+      if (prev_is_syscall)
+	{
+	  if (trace_infos(pid) == -1)
+	    return (-1);
+	  prev_is_syscall = 0;
+	}
+
+      if (is_syscall(pid))
+	prev_is_syscall = 1;
+
       if (next_step(pid) == -1)
 	return (-1);
     }

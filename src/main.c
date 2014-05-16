@@ -7,6 +7,8 @@
 #include <sys/wait.h>
 #include <sys/reg.h>
 #include <sys/user.h>
+#include <errno.h>
+#include <limits.h>
 
 #include "params.h"
 #include "syscallent.h"
@@ -47,7 +49,7 @@ int	launch_son(char** argv)
   if (!pid)
     {
       ptrace(PTRACE_TRACEME, 0, 0, 0);
-      execvp(argv[0], argv + 1);
+      execvp(argv[0], argv);
       exit(EXIT_FAILURE);
     }
   return (pid);
@@ -191,18 +193,66 @@ int	trace(int pid, char** argv)
   return (0);
 }
 
-int	main()
+void	parser_ex(params_t *data, char **argv)
+{
+  char	*token;
+  char	*save;
+  int	i;
+
+  save = NULL;
+  i = 0;
+  token = strtok_r(argv[0], " ", &save);
+  data->argv = malloc(sizeof(char*));
+  while (token != NULL)
+    {
+      data->argv = realloc(data->argv, (i + 1) * sizeof(char *));
+      data->argv[i] = token;
+      token = strtok_r(NULL, " ", &save);
+      i++;
+    }
+  data->argv[i] = NULL;
+}
+
+int	parser(params_t *data, int argc, char **argv)
+{
+  char	*ptr;
+
+  data->pid = -1;
+  if (argc == 1)
+    {
+      parser_ex(data, argv);
+      return (1);
+    }
+  else if (argc == 2)
+    {
+      if (strcmp(argv[0], "-p") == 0)
+	{
+	  data->pid = strtol(argv[1], &ptr, 10);
+	  if (errno == ERANGE || errno == EINVAL || data->pid == 0)
+	    {
+	      return (0);
+	    }
+	  return (1);
+	}
+      else
+	return (0);
+    }
+  else
+    return (0);
+}
+
+void	usage()
+{
+  printf("usage\n");
+}
+
+int	main(int argc, char **argv)
 {
   params_t	params;
-  char*		av[2] =
-    {
-      "ls",
-      "ls"
-    };
 
-  params.pid = -1;
-  params.argv = av;
-  if (trace(params.pid, params.argv) == -1)
+  if (parser(&params, argc -1, argv + 1) == 0)
+    usage();
+  else if (trace(params.pid, params.argv) == -1)
     return (EXIT_FAILURE);
   return (EXIT_SUCCESS);
 }

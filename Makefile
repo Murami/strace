@@ -12,7 +12,15 @@
 
 NAME		=	strace
 
-SRC		=	main
+SRC		=	main			\
+			display_args		\
+			display_call		\
+			display_return		\
+			display_syscallname	\
+			is_syscall		\
+			parser			\
+			trace			\
+			syscallent
 
 SRC_EXT		=	.c
 

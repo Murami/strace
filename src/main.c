@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 #include <sys/reg.h>
@@ -12,24 +13,12 @@
 
 long	peek_data(int pid, void* addr)
 {
-  long	value;
-
-  if ((value = ptrace(PTRACE_PEEKDATA, pid, addr, 0)) == -1)
-    {
-      perror("error: can't get data");
-      return (-1);
-    }
-  return (value);
+  return (ptrace(PTRACE_PEEKDATA, pid, addr, 0));
 }
 
-int	get_regs(int pid, struct user_regs_struct* regs)
+long	get_regs(int pid, struct user_regs_struct* regs)
 {
-  if (ptrace(PTRACE_GETREGS, pid, 0, regs) == -1)
-    {
-      perror("error: can't get registers");
-      return (-1);
-    }
-  return (0);
+  return (ptrace(PTRACE_GETREGS, pid, 0, regs));
 }
 
 int	is_syscall(int pid)
@@ -106,18 +95,27 @@ void	display_args(struct user_regs_struct* regs)
       printf("%ld", argv[i]);
       i++;
     }
-  printf(")\n");
+  printf(")");
 }
 
-int	trace_infos(int pid)
+void	trace_call(int pid)
 {
   struct user_regs_struct	regs;
 
   if (get_regs(pid, &regs) == -1)
-    return (-1);
+    return;
   display_syscallname(&regs);
   display_args(&regs);
-  return (0);
+}
+
+void	trace_return(int pid)
+{
+  struct user_regs_struct	regs;
+
+  if (get_regs(pid, &regs) == -1)
+    printf(" = ???\n");
+  else
+    printf(" = %lld\n", (long long int)regs.rax);
 }
 
 int	next_step(int pid)
@@ -133,11 +131,19 @@ int	next_step(int pid)
 int	trace_loop(int pid)
 {
   int	status;
+  bool	sys_call_return;
 
+  sys_call_return = false;
   printf("=== Process ID %d ===\n", pid);
   while (1)
     {
       waitpid(pid, &status, 0);
+
+     if (sys_call_return)
+       {
+	 trace_return(pid);
+	 sys_call_return = false;
+       }
 
      if (WIFEXITED(status))
 	{
@@ -152,8 +158,8 @@ int	trace_loop(int pid)
 
       if (is_syscall(pid))
 	{
-	  if (trace_infos(pid) == -1)
-	    return (-1);
+	  trace_call(pid);
+	  sys_call_return = true;
 	}
 
       if (next_step(pid) == -1)

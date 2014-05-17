@@ -1,3 +1,13 @@
+/*
+** parser.c for  in /home/otoshigami/Workspace/Epitech/git/AUSP_strace
+**
+** Made by otoshigami
+** Login   <otoshigami@epitech.net>
+**
+** Started on  Sat May 17 18:58:24 2014 otoshigami
+** Last update Sat May 17 18:58:25 2014 otoshigami
+*/
+
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>

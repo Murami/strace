@@ -1,3 +1,13 @@
+/*
+** trace.c for  in /home/otoshigami/Workspace/Epitech/git/AUSP_strace
+**
+** Made by otoshigami
+** Login   <otoshigami@epitech.net>
+**
+** Started on  Sat May 17 18:57:39 2014 otoshigami
+** Last update Sat May 17 18:57:41 2014 otoshigami
+*/
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <errno.h>

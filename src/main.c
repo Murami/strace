@@ -1,3 +1,13 @@
+/*
+** main.c for  in /home/otoshigami/Workspace/Epitech/git/AUSP_strace
+**
+** Made by otoshigami
+** Login   <otoshigami@epitech.net>
+**
+** Started on  Sat May 17 18:57:55 2014 otoshigami
+** Last update Sat May 17 18:57:57 2014 otoshigami
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "strace.h"

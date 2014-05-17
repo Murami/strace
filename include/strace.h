@@ -1,3 +1,13 @@
+/*
+** strace.h for  in /home/otoshigami/Workspace/Epitech/git/AUSP_strace
+**
+** Made by otoshigami
+** Login   <otoshigami@epitech.net>
+**
+** Started on  Sat May 17 18:58:38 2014 otoshigami
+** Last update Sat May 17 18:58:39 2014 otoshigami
+*/
+
 #ifndef STRACE_H
 # define STRACE_H
 

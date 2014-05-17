@@ -1,3 +1,13 @@
+/*
+** display_args.c for  in /home/otoshigami/Workspace/Epitech/git/AUSP_strace
+**
+** Made by otoshigami
+** Login   <otoshigami@epitech.net>
+**
+** Started on  Sat May 17 18:58:12 2014 otoshigami
+** Last update Sat May 17 18:58:13 2014 otoshigami
+*/
+
 #include <stdio.h>
 #include <sys/user.h>
 

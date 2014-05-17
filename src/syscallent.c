@@ -1,3 +1,13 @@
+/*
+** syscallent.c for  in /home/otoshigami/Workspace/Epitech/git/AUSP_strace
+**
+** Made by otoshigami
+** Login   <otoshigami@epitech.net>
+**
+** Started on  Sat May 17 18:57:49 2014 otoshigami
+** Last update Sat May 17 18:57:50 2014 otoshigami
+*/
+
 #include "syscallent.h"
 
 syscallentry_t syscallent[] =

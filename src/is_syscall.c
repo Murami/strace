@@ -5,13 +5,13 @@
 ** Login   <otoshigami@epitech.net>
 **
 ** Started on  Sat May 17 18:58:20 2014 otoshigami
-** Last update Sat May 17 18:58:21 2014 otoshigami
+** Last update Sun May 18 13:41:36 2014 pinon
 */
 
 #include <sys/ptrace.h>
 #include <sys/user.h>
 
-int	is_syscall(int pid)
+int				is_syscall(int pid)
 {
   struct user_regs_struct	regs;
   long				instr;

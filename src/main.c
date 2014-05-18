@@ -5,7 +5,7 @@
 ** Login   <otoshigami@epitech.net>
 **
 ** Started on  Sat May 17 18:57:55 2014 otoshigami
-** Last update Sat May 17 18:57:57 2014 otoshigami
+** Last update Sun May 18 13:40:53 2014 pinon
 */
 
 #include <stdio.h>
@@ -17,7 +17,7 @@ void	usage()
   printf("usage : ./strace [cmd | -p pid]\n");
 }
 
-int	main(int argc, char **argv)
+int		main(int argc, char **argv)
 {
   params_t	params;
 

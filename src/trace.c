@@ -5,7 +5,7 @@
 ** Login   <otoshigami@epitech.net>
 **
 ** Started on  Sat May 17 18:57:39 2014 otoshigami
-** Last update Sat May 17 18:57:41 2014 otoshigami
+** Last update Sun May 18 13:41:40 2014 pinon
 */
 
 #include <stdbool.h>
@@ -21,7 +21,7 @@
 
 static int	launch_son(char** argv)
 {
-  int	pid;
+  int		pid;
 
   if ((pid = fork()) == -1)
     return (-1);

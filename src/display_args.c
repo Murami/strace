@@ -5,7 +5,7 @@
 ** Login   <otoshigami@epitech.net>
 **
 ** Started on  Sat May 17 18:58:12 2014 otoshigami
-** Last update Sat May 17 18:58:13 2014 otoshigami
+** Last update Sun May 18 13:41:21 2014 pinon
 */
 
 #include <stdio.h>
@@ -30,11 +30,11 @@ static void	get_argv(struct user_regs_struct* regs, long* argv)
   argv[5] = regs->r9;
 }
 
-void	display_args(struct user_regs_struct* regs)
+void		display_args(struct user_regs_struct* regs)
 {
-  int				i;
-  int				argc;
-  long				argv[6];
+  int		i;
+  int		argc;
+  long		argv[6];
 
   i = 0;
   argc = get_argc(regs);

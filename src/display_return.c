@@ -5,7 +5,7 @@
 ** Login   <otoshigami@epitech.net>
 **
 ** Started on  Sat May 17 18:58:16 2014 otoshigami
-** Last update Sat May 17 18:58:17 2014 otoshigami
+** Last update Sun May 18 13:41:29 2014 pinon
 */
 
 #include <sys/ptrace.h>
@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include "strace.h"
 
-void	display_return(int pid)
+void				display_return(int pid)
 {
   struct user_regs_struct	regs;
 
